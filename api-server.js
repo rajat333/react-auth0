@@ -60,6 +60,73 @@ app.get("/api/external", checkJwt, (req, res) => {
     msg: "Your access token was successfully validated!"
   });
 });
+
+app.post("/api/profileUpdate", jsonParser, checkJwt, (req, res) => {
+  const body = req.body;
+  const auth0Id = req.user.sub.split('|')[1];
+  console.log('auth0Id', auth0Id, body);
+  isUserExist( auth0Id)
+  .then( result=>{  
+      console.log(' result >>>>>>>>>>>>', result);
+      if( result.length === 0){
+        console.log(' new user ');
+        // new user 
+          return insertUser(body.name,auth0Id, body.profileDescription,body.email, body.city);
+      }else{
+        // update user 
+        console.log(' existing user update ')
+        return updateUser(body, auth0Id);
+      }    
+  }).then( userDetails =>{
+      // insert skills based on user
+      console.log(' user details ', userDetails);
+      if( body.skills) {
+          return updateSkills(body.skills);
+      }
+
+  }).catch(e=>{
+    console.log('Exception occur', e);
+  })
+  
+});
+app.post("/api/user/skill", jsonParser, checkJwt, (req,res)=>{
+      
+  const body = req.body;
+  console.log('body body', body);
+  const auth0Id = req.user.sub.split('|')[1];
+  console.log('auth0Id', auth0Id, body);
+ 
+       isUserExist(auth0Id)
+       .then( async (result) =>{
+          console.log('result result ', result);
+          if(result.length >0){
+            //add new skill
+            const skill =  await insertSkill(body.skillName);
+            console.log('skill ', skill);
+            res.status(200).json({
+              success: true,
+            })
+          }else{
+            res.status(401).json({
+              error:'Unauthorised'
+            });
+          }
+       }).catch(e=>{
+          console.log(' exception occur ', e);
+       });
+})
+
+function insertSkill(name) {
+    const sql = `Insert into Skill( skillName ) Values (${ mysql.escape(name) })`;
+    return new Promise( (resolve, reject)=>{
+    connection.query(sql,function (err, result, fields) {
+      if (err) {
+        reject(err);
+      }
+      resolve(result);
+   });
+  });
+}
 function isUserExist (auth0Id){
   const sql = `Select * from User where auth0Id = ${ mysql.escape(auth0Id) }`
   return new Promise( function(resolve, reject) {
@@ -122,49 +189,6 @@ function updateSkills (skills ){
 };
 
 
-app.post("/api/profileUpdate", jsonParser, checkJwt, (req, res) => {
-  const body = req.body;
-  // console.log('req req ', req);
-  const auth0Id = req.user.sub.split('|')[1];
-  console.log('auth0Id', auth0Id, body);
-  isUserExist( auth0Id)
-  .then( result=>{  
-      console.log(' result >>>>>>>>>>>>', result);
-      if( result.length === 0){
-        console.log(' new user ');
-        // new user 
-          return insertUser(body.name,auth0Id, body.profileDescription,body.email, body.city);
-      }else{
-        // update user 
-        console.log(' existing user update ')
-        return updateUser(body, auth0Id);
-      }
-      
-  }).then( userDetails =>{
-      // insert skills based on user
-      console.log(' user details ', userDetails);
-      if( body.skills) {
-          return updateSkills(body.skills);
-      }
 
-  }).catch(e=>{
-    console.log('Exception occur', e);
-  })
-  
-  // connection.query("SELECT * FROM user ", function (err, result, fields) {
-  //   if (err) throw err;
-  //   console.log('###########', result);
-  // });
-  // var sql = "INSERT INTO customers (name, address) VALUES ('Company Inc', 'Highway 37')";
-
-  // var sql = "SELECT * FROM User JOIN Skill ON users.userId = Skill.userId";
-
-  // var sql = "UPDATE customers SET address = 'Canyon 123' WHERE address = 'Valley 345'";
-  // con.query(sql, function (err, result) {
-  //   if (err) throw err;
-  //   console.log(result.affectedRows + " record(s) updated");
-  // });
-
-});
 
 app.listen(port, () => console.log(`API Server listening on port ${port}`));
