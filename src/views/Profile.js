@@ -20,7 +20,6 @@ export const ProfileComponent = () => {
       console.log('json json ', json.data.email);
       updateEmail(json.data.email);
       updateCity('Jind');
-      console.log('user user user', user);
       const skills = ["Node", "C++", "ReactJs"];
       updateSkills(skills);
       updateName(user.nickname);
@@ -28,11 +27,18 @@ export const ProfileComponent = () => {
   fetchBooks();
   },[]);
 
+
   const handleSubmit = e => {
     console.log(' handle submit ',e);
     e.preventDefault();
     console.log('22222222222222');
   }
+
+  const removeSkill = e=>{
+    console.log('remove skill ',e.target.id);
+    // remove skill api 
+  }
+
   return (
     <Container className="mb-5">
       <Row>
@@ -56,10 +62,20 @@ export const ProfileComponent = () => {
       <FormGroup>
         <Label for="examplePassword">Skills</Label>
         <Input type="text" name="skill" id="skill" placeholder="Enter new skills" />
+        <Button color="info">Add</Button>
+        </FormGroup>
+        <FormGroup>
         {
-          skills.map( e =>{
+          skills.map( (e,index) =>{
               return (
-                <h6 key={ e+Math.random() }> <Badge color="secondary">{ e }</Badge> </h6>
+                <Button key={index} style={{ margin :'0px 6px 0px 5px' }} color="secondary" type="button">
+                   <span >{ e }</span>
+                  <Badge style={ { top:'-16px', }}  className="badge-circle badge-floating border-white"
+                    color="danger" size="sd" id = { index } 
+                    onClick  ={ removeSkill }
+                    > X </Badge>
+                </Button>
+                // <h6 key={ e+Math.random() }> <Badge color="secondary">{ e }</Badge> </h6>
               )
           })
         }
