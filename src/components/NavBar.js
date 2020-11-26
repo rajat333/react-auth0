@@ -43,7 +43,7 @@ const NavBar = () => {
           <NavbarToggler onClick={toggle} />
           <Collapse isOpen={isOpen} navbar>
             <Nav className="mr-auto" navbar>
-              <NavItem>
+              {/* <NavItem>
                 <NavLink
                   tag={RouterNavLink}
                   to="/"
@@ -52,7 +52,7 @@ const NavBar = () => {
                 >
                   Home
                 </NavLink>
-              </NavItem>
+              </NavItem> */}
               {isAuthenticated && (
                 <NavItem>
                   <NavLink
