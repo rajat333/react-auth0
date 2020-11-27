@@ -4,13 +4,14 @@ import { Badge, Button, Form, FormGroup, Label, Input, FormText } from 'reactstr
 // import Highlight from "../components/Highlight";
 import Loading from "../components/Loading";
 import { useAuth0, withAuthenticationRequired } from "@auth0/auth0-react";
-
+import  axios from "axios";
 export const ProfileComponent = () => {
   const { user } = useAuth0();
   // const [fetchedData, setFetchedData] = useState('');
   const [email, updateEmail] = useState();
   const [city, updateCity] = useState();
   const [name, updateName] = useState();
+  const [newSkill, updateNewSkill] = useState();
   const [skills, updateSkills] = useState([]);
 
   useEffect(() => {
@@ -21,6 +22,7 @@ export const ProfileComponent = () => {
       updateEmail(json.data.email);
       updateCity('Jind');
       const skills = ["Node", "C++", "ReactJs"];
+      updateNewSkill('');
       updateSkills(skills);
       updateName(user.nickname);
   }
@@ -39,6 +41,14 @@ export const ProfileComponent = () => {
     // remove skill api 
   }
 
+  const addNewSkill = e=>{
+    console.log(' addd new skill', newSkill);
+    async function addSkillToUser(){
+      // const newSkill = await axios.post('http://localhost:3001/api/user/skill')
+      updateSkills(["Node", "C++", "ReactJs", newSkill]);
+    }
+    addSkillToUser();
+  }
   return (
     <Container className="mb-5">
       <Row>
@@ -47,22 +57,30 @@ export const ProfileComponent = () => {
         <FormGroup>
         <Label for="name">Name </Label>
         <Input type="text"  value={ name }
-        name="name" id="name" placeholder="Enter your name" />
+        name="name" id="name"
+        onChange={e => updateName(e.target.value)}
+        placeholder="Enter your name" />
       </FormGroup>
       <FormGroup>
         <Label for="exampleEmail">Email </Label>
         <Input type="email"  value={ email }
+        onChange={e => updateEmail(e.target.value)}
         name="email" id="exampleEmail" placeholder="with a placeholder" />
       </FormGroup>
       <FormGroup>
         <Label for="city">City </Label>
         <Input type="text"  value={ city }
-        name="city" id="city" placeholder="with a placeholder" />
+        name="city" id="city" 
+        onChange={e => updateCity(e.target.value)}
+        placeholder="with a placeholder" />
       </FormGroup>
       <FormGroup>
         <Label for="examplePassword">Skills</Label>
-        <Input type="text" name="skill" id="skill" placeholder="Enter new skills" />
-        <Button color="info">Add</Button>
+        <Input type="text" name="skill" id="skill" 
+        placeholder="Enter new skills"
+        onChange={e => updateNewSkill(e.target.value)}
+        />
+        <Button color="info" onClick={ addNewSkill } >Add</Button>
         </FormGroup>
         <FormGroup>
         {
