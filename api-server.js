@@ -89,8 +89,8 @@ app.post("/api/profileUpdate", jsonParser, checkJwt, (req, res) => {
   })
   
 });
-app.post("/api/user/skill", jsonParser, checkJwt, (req,res)=>{
-      
+
+app.delete("/api/user/skill", jsonParser, checkJwt, (req, res)=>{
   const body = req.body;
   console.log('body body', body);
   const auth0Id = req.user.sub.split('|')[1];
@@ -98,26 +98,67 @@ app.post("/api/user/skill", jsonParser, checkJwt, (req,res)=>{
  
        isUserExist(auth0Id)
        .then( async (result) =>{
+         console.log('result ', result);
+         const deleteSkill = await deleteSkill(body.skillId);
+       }).catch(e=>{
+          console.log('exception ');
+       })
+});
+app.post("/api/user/skill", jsonParser, checkJwt, (req,res)=>{
+      
+  const body = req.body;
+  console.log('body body', body);
+  const auth0Id = req.user.sub.split('|')[1];
+  console.log('auth0Id', auth0Id, body);
+ 
+       isUserExist(auth0Id, body.email)
+       .then( async (result) =>{
           console.log('result result ', result);
           if(result.length >0){
             //add new skill
-            const skill =  await insertSkill(body.skillName);
-            console.log('skill ', skill);
-            res.status(200).json({
-              success: true,
-            })
+            console.log('body.newSkill ', body.newSkill && body.newSkill.length);
+            const cond = (body.newSkill && body.newSkill.length >0);
+            console.log(' cond ', cond);
+            if( cond ){
+              console.log('in if if if if ');
+              const skill =  await insertSkill(body.newSkill, result[0].userId);
+              console.log('skill ', skill);
+              const newlyUser =  await isUserExist(auth0Id, body.email);
+              const skills = await getSkills( newlyUser[0].userId);
+              res.status(200).json({
+                newlyUser: newlyUser,
+                skills: skills,
+              })
+            }else{
+              console.log(' else else else ')
+              const newlyUser =  await isUserExist(auth0Id, body.email);
+              const skills = await getSkills( newlyUser[0].userId);
+              res.status(200).json({
+                newlyUser: newlyUser,
+                skills: skills,
+              })
+            }
+            
           }else{
-            res.status(401).json({
-              error:'Unauthorised'
-            });
+            // create new user 
+            let newUser = await insertUser( body.name, auth0Id, 
+              body.profileDescription, body.email,body.city);
+            console.log('newUser ', newUser);
+            const newlyUser =  await isUserExist(auth0Id, body.email);
+            
+            res.status(200).json({
+              newlyUser: newlyUser,
+            })
           }
        }).catch(e=>{
           console.log(' exception occur ', e);
        });
 })
 
-function insertSkill(name) {
-    const sql = `Insert into Skill( skillName ) Values (${ mysql.escape(name) })`;
+function insertSkill(name, userId) {
+  console.log('userId userId', userId);
+    const sql = `INSERT into Skill ( userId, skillName) VALUES (${userId},${ mysql.escape(name) })`;
+    console.log('sql sql', sql);
     return new Promise( (resolve, reject)=>{
     connection.query(sql,function (err, result, fields) {
       if (err) {
@@ -127,8 +168,25 @@ function insertSkill(name) {
    });
   });
 }
-function isUserExist (auth0Id){
-  const sql = `Select * from User where auth0Id = ${ mysql.escape(auth0Id) }`
+
+function getSkills(userId){
+
+  var sql = `SELECT * FROM Skill where userId = ${ userId}`;
+  console.log('getSkills sql ', sql);
+  return new Promise( (resolve, reject)=>{
+      connection.query(sql, function (err, result, fields){
+        if (err) {
+          reject(err);
+        }
+        resolve(result);
+      });
+  });
+}
+
+function isUserExist (auth0Id, email){
+
+  const sql = `Select * from User where auth0Id = ${ mysql.escape(auth0Id) } and email = ${ mysql.escape(email) }`
+  console.log('isUserExist sql ', sql);
   return new Promise( function(resolve, reject) {
     connection.query(sql,function (err, result, fields) {
       if (err) {
@@ -140,9 +198,13 @@ function isUserExist (auth0Id){
 };
 
 function insertUser (name, auth0Id, profileDescription, email, city){
-  const sql = `Insert Into User (name, auth0Id, profileDescription, email, city) 
-   Values = ${ mysql.escape(name),mysql.escape(auth0Id),
-     mysql.escape(profileDescription), mysql.escape(email), mysql.escape(city) }`
+  console.log( '>>>>>>>>', name, email, auth0Id, profileDescription, email, city)
+  const sql = `INSERT into User ( name, auth0Id,
+    profileDescription, email, city ) VALUES 
+  (${mysql.escape(name)},${ mysql.escape(auth0Id)},
+  ${ mysql.escape(profileDescription)},${ mysql.escape(email)},
+  ${ mysql.escape(city)})`;
+  console.log('insert user sql ', sql);
   return new Promise( function(resolve, reject) {
     connection.query(sql,function (err, result, fields) {
       if (err) {
