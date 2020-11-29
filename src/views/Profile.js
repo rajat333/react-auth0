@@ -83,20 +83,18 @@ export const ProfileComponent = () => {
   }
 
   const removeSkill = e=>{
-    console.log('remove skill ',e.target.id);
+    console.log('remove skill ',e,e.target.id);
+    const removeSkillId = e.target.id;
     async function addSkillToUser(){
       const token = await getAccessTokenSilently();
-
-      const newSkillAdded = await axios.post('http://localhost:3001/api/user/skill',
-      { newSkill: newSkill,
-       email: email,
-      },
+      const newSkillAdded = await axios.put(`http://localhost:3001/user/removeSkill/${removeSkillId}`,
+      getRequest(user,user_id ),
       { headers: {
             Authorization: `Bearer ${token}`,  
             'Content-Type': 'application/json',
         },
       });
-      // updateSkills(skills.push(newSkillAdded.data.newSkill));
+      updateSkills(newSkillAdded.data.skills);
     }
     addSkillToUser();
     // remove skill api 
@@ -157,7 +155,7 @@ export const ProfileComponent = () => {
                 <Button key={index} style={{ margin :'0px 6px 0px 5px' }} color="secondary" type="button">
                    <span >{ e.name }</span>
                   <Badge id = { e.id } style={ { top:'-16px', }}  className="badge-circle badge-floating border-white"
-                    color="danger" size="sd" id = { index } 
+                    color="danger" size="sd"  
                     onClick  ={ removeSkill }
                     > X </Badge>
                 </Button>
