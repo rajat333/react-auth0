@@ -11,10 +11,11 @@ export const ProfileComponent = () => {
   const [email, updateEmail] = useState();
   const [user_id, updateUserId] = useState();
   const [city, updateCity] = useState();
-  const [name, updateName] = useState();
+  const [name, updateName] = useState();  
   const [profileDescription, updateProfileDes] = useState();
   const [newSkill, updateNewSkill] = useState();
   const [skills, updateSkills] = useState([]);
+  const [selectedFile, updateSelectedFile] = useState();
 
   function getRequest(user,user_id){
     return {  
@@ -30,7 +31,7 @@ export const ProfileComponent = () => {
     async function updateUserDetails(){
       const token = await getAccessTokenSilently();
       console.log('updateUserDetails ', user);
-      const user_id = 0;
+      // const user_id = 0;
       const request = getRequest(user,user_id ? user_id: 0);
       console.log('request request', request);
       const updateUser = await axios.post('http://localhost:3001/users',
@@ -55,7 +56,33 @@ export const ProfileComponent = () => {
     
   },[]);
 
-
+  const onFileChange = event => { 
+    console.log('update selected file ',event.target.files[0]);
+    updateSelectedFile(event.target.files[0]); 
+  }; 
+  
+  const onFileUpload = async(e) => { 
+     
+    // Create an object of formData 
+    const formData = new FormData(); 
+    // formData.append('file', selectedFile)
+    // Update the formData object 
+    formData.append( 
+      "cover", 
+      selectedFile, 
+      selectedFile.name 
+    ); 
+    console.log('selectedFile selectedFile ',selectedFile); 
+    console.log('form data ', formData);
+    await axios.post('http://localhost:3001/user/profilePicUpload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        auth0Id: user.sub.split('|')[1],
+      },
+      // body: selectedFile,
+    });
+    // axios.post("api/uploadfile", formData); 
+  }; 
   const handleSubmit = e => {
     e.preventDefault();
     console.log('user_iduser_iduser_iduser_id',user_id);
@@ -77,9 +104,7 @@ export const ProfileComponent = () => {
       updateSkills(updateUser.data.skills);
       updateProfileDes(updateUser.data.profileDescription);
     }
-    updateUserDetails();
-    
-    console.log('22222222222222');
+    updateUserDetails();    
   }
 
   const removeSkill = e=>{
@@ -159,10 +184,18 @@ export const ProfileComponent = () => {
                     onClick  ={ removeSkill }
                     > X </Badge>
                 </Button>
-                // <h6 key={ e+Math.random() }> <Badge color="secondary">{ e }</Badge> </h6>
               )
           })
         }
+      </FormGroup>
+      <FormGroup>
+        <Label for="exampleFile">File</Label>
+        <Input style={{ width:'60%', margin: "10px 10px 10px 10px",display: "inline-block" }} type="file" name="file" id="exampleFile" 
+        onChange={onFileChange}
+        />
+        <Button onClick={onFileUpload}> 
+                  Upload! 
+                </Button>
       </FormGroup>
       <Button>Submit</Button>
     </Form>

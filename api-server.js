@@ -17,11 +17,11 @@ const app = express();
 //   password: 'PBQp9vimSp',
 //   database: 'sql12378623'
 // });
-connection.connect((err) => {
-  console.log('db connection');
-  if (err) throw err;
-  console.log('Connected!');
-});
+// connection.connect((err) => {
+//   console.log('db connection');
+//   if (err) throw err;
+//   console.log('Connected!');
+// });
 const port = process.env.API_PORT || 3001;
 const appPort = process.env.SERVER_PORT || 3000;
 const appOrigin = authConfig.appOrigin || `http://localhost:${appPort}`;
