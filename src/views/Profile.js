@@ -9,33 +9,46 @@ export const ProfileComponent = () => {
   const { user, getAccessTokenSilently } = useAuth0();
   // const [fetchedData, setFetchedData] = useState('');
   const [email, updateEmail] = useState();
+  const [user_id, updateUserId] = useState();
   const [city, updateCity] = useState();
   const [name, updateName] = useState();
   const [profileDescription, updateProfileDes] = useState();
   const [newSkill, updateNewSkill] = useState();
   const [skills, updateSkills] = useState([]);
 
+  function getRequest(user,user_id){
+    return {  
+      name: name ? name: '',
+      email: email ? email: '',
+      profileDescription: profileDescription ? profileDescription: '', 
+      city: city ? city : '',
+      auth0Id: user.sub.split('|')[1],
+      user_id: user_id ? user_id: '',
+    }
+  }
   useEffect(() => {
     async function updateUserDetails(){
       const token = await getAccessTokenSilently();
       console.log('updateUserDetails ', user);
-      const updateUser = await axios.post('http://localhost:3001/api/user/skill',
-      { name: name ? name : ' ', 
-        email: email ? email: user.email, 
-        profileDescription: 'sdsfsd',
-        city: city ? city:  ' ',
-      },
+      const user_id = 0;
+      const request = getRequest(user,user_id ? user_id: 0);
+      console.log('request request', request);
+      const updateUser = await axios.post('http://localhost:3001/users',
+      request,
       { headers: {
             Authorization: `Bearer ${token}`,  
             'Content-Type': 'application/json',
         },
       });
       console.log('updateUser updateUser', updateUser);
-      updateName(updateUser.data.newlyUser[0].name);
-      updateCity(updateUser.data.newlyUser[0].city);
-      updateEmail(updateUser.data.newlyUser[0].email);
+      updateName(updateUser.data.name);
+      updateCity(updateUser.data.city);
+      updateEmail(updateUser.data.email);
       updateSkills(updateUser.data.skills);
-      updateProfileDes(updateUser.data.newlyUser[0].profileDescription);
+      console.log('Updating user id in hooks', updateUser.data.id);
+      updateUserId(updateUser.data.id);
+      updateProfileDes(updateUser.data.profileDescription);
+      console.log('user_id ',user_id);
       
     }
     updateUserDetails();
@@ -44,8 +57,28 @@ export const ProfileComponent = () => {
 
 
   const handleSubmit = e => {
-    console.log(' handle submit ',e);
     e.preventDefault();
+    console.log('user_iduser_iduser_iduser_id',user_id);
+    async function updateUserDetails(){
+      const token = await getAccessTokenSilently();
+      const request = getRequest(user,user_id ? user_id: 0);
+      console.log('request request', request);
+      const updateUser = await axios.post('http://localhost:3001/users',
+      request,
+      { headers: {
+            Authorization: `Bearer ${token}`,  
+            'Content-Type': 'application/json',
+        },
+      });
+      console.log('updateUser updateUser', updateUser);
+      updateName(updateUser.data.name);
+      updateCity(updateUser.data.city);
+      updateEmail(updateUser.data.email);
+      updateSkills(updateUser.data.skills);
+      updateProfileDes(updateUser.data.profileDescription);
+    }
+    updateUserDetails();
+    
     console.log('22222222222222');
   }
 
@@ -73,13 +106,13 @@ export const ProfileComponent = () => {
     console.log(' addd new skill', newSkill);
     async function addSkillToUser(){
       const token = await getAccessTokenSilently();
-      const newSkillAdded = await axios.post('http://localhost:3001/api/user/skill',
-      { newSkill: newSkill, email: email},
+      const newSkillAdded = await axios.post('http://localhost:3001/user/skill',
+      { skillName: newSkill, ...getRequest(user,user_id )},
       { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json',
       },});
       console.log('newSkillAdded newSkillAdded ', newSkillAdded);
       updateSkills((newSkillAdded.data.skills));
-      // updateNewSkill('');
+      updateNewSkill('');
     }
     addSkillToUser();
   }
@@ -122,7 +155,7 @@ export const ProfileComponent = () => {
             console.log('eeeeeeee', e);
               return (
                 <Button key={index} style={{ margin :'0px 6px 0px 5px' }} color="secondary" type="button">
-                   <span >{ e.skillName }</span>
+                   <span >{ e.name }</span>
                   <Badge id = { e.id } style={ { top:'-16px', }}  className="badge-circle badge-floating border-white"
                     color="danger" size="sd" id = { index } 
                     onClick  ={ removeSkill }
