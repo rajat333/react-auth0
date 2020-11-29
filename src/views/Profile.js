@@ -15,6 +15,7 @@ export const ProfileComponent = () => {
   const [profileDescription, updateProfileDes] = useState();
   const [newSkill, updateNewSkill] = useState();
   const [skills, updateSkills] = useState([]);
+  const [photos, updatePhotos] = useState([]);
   const [selectedFile, updateSelectedFile] = useState();
 
   function getRequest(user,user_id){
@@ -49,6 +50,7 @@ export const ProfileComponent = () => {
       console.log('Updating user id in hooks', updateUser.data.id);
       updateUserId(updateUser.data.id);
       updateProfileDes(updateUser.data.profileDescription);
+      updatePhotos(updateUser.data.photos);
       console.log('user_id ',user_id);
       
     }
@@ -165,6 +167,14 @@ export const ProfileComponent = () => {
         placeholder="with a placeholder" />
       </FormGroup>
       <FormGroup>
+        <Label for="profileDescription">ProfileDescription </Label>
+        <Input type="text"  value={ profileDescription }
+        name="profileDescription" id="profileDescription" 
+        onChange={e => updateProfileDes(e.target.value)}
+        placeholder="with a placeholder" />
+      </FormGroup>
+      
+      <FormGroup>
         <Label for="examplePassword">Skills</Label>
         <Input type="text" name="newSkill" id="skill" 
         placeholder="Enter new skills"
@@ -196,6 +206,19 @@ export const ProfileComponent = () => {
         <Button onClick={onFileUpload}> 
                   Upload! 
                 </Button>
+        <FormText>
+          <ul>
+          {
+            photos.map( e=>{
+                return <li>
+                  Type - { e.type} &nbsp;&nbsp;
+                  s3Key - { e.s3Key}
+                  
+                </li>
+            })
+          }
+          </ul>
+        </FormText>
       </FormGroup>
       <Button>Submit</Button>
     </Form>
